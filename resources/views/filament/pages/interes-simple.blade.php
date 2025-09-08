@@ -7,7 +7,6 @@
         <div class="flex-1 p-8 overflow-y-auto">
             <div class="max-w-2xl mx-auto">
                 <!-- Dark Mode Toggle -->
-
                 
 
                 <div class="mb-8 text-center">

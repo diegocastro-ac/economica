@@ -16,7 +16,7 @@ class InteresSimple extends Page
     }
 
     protected array $extraBodyAttributes = [
-        'class' => 'bg-gray-700 dark:bg-black',
+        'class' => 'bg-gray-100 dark:bg-black',
     ];
 
     //public function getMaxContentWidth(): Width

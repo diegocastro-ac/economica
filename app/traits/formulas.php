@@ -25,11 +25,15 @@ trait formulas
     }
 
     private function interesSimple() {
-        $this->montoFinal_S = 0;
-        $this->tasaInteres_S = 0;
-        $tiempo=$this->tiempo_S/$this->frecuencia_S;
-        $tasaInteres=$this->tasaInteres_S/100;
+        if (!empty($this->tiempo_S)) {
+            $tiempo=$this->tiempo_S/$this->frecuencia_S;
+        }
+        
         //dd($tiempo);
+
+        if (!empty($this->tasaInteres_S)) {
+            $tasaInteres=$this->tasaInteres_S/100;  
+        }
 
         //calcular monto final
         if (empty($this->montoFinal_S) && $this->capitalInicial_S && $this->tasaInteres_S && $this->tiempo_S) {
@@ -39,7 +43,7 @@ trait formulas
         }
 
         //calcular capital inicial
-        else if (empty($this->capitalInicial_S) && $this->montoFinal_S && $this->tasaInteres_S && $this->tiempo_S) {
+        else if (empty($this->capitalInicial_S) && $this->montoFinal_S && $this->tasaInteres_S && $this->tiempo_S)  {
         $this->result = $this->montoFinal_S / (1 + $tasaInteres * $tiempo);
         }
 

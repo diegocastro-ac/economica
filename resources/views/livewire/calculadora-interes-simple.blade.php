@@ -42,7 +42,7 @@
         </div>
 
         <button type="submit"
-            class="w-full m-2 py-4 bg-gray-900 dark:bg-gray-700 text-dark border-0 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700 dark:hover:bg-gray-600 active:scale-[0.98] transform">
+            class="w-full m-2 py-4 bg-gray-900 dark:bg-gray-700 text-white border-0 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700 dark:hover:bg-gray-600 active:scale-[0.98] transform">
             Calcular Interés Simple
         </button>
     </form>
@@ -54,7 +54,7 @@
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Resultado</h3>
             </div>
 
-            <div class="text-3xl font-bold text-green-600 dark:text-green-400 mb-2">{{$this->result ?? "no calculado"}}</div>
+            <div class="text-3xl font-bold text-blue dark:text-green-400 mb-2">{{$this->result ?? "no calculado"}}</div>
             <p class="text-gray-600 dark:text-gray-400 text-sm">
                 Monto final después de 2 años con {{$this->result ?? "0"}} de interés ganado
             </p>
