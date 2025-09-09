@@ -37,25 +37,15 @@ class CalculadoraInteresSimple extends Component
     public function updatedModoTiempoDetallado()
     {
         if ($this->modoTiempoDetallado) {
-            // opcional: guardar frecuencia previa si quieres restaurarla al salir
-            // $this->prevFrecuencia = $this->frecuencia_S ?? 1;
-
-            // ocultamos selector en la vista (condición Blade), no es necesario cambiar la propiedad
-            // pero buena práctica limpiar el campo simple
+            // Si cambia a modo detallado, limpiar el campo simple
             $this->tiempo_S = null;
         } else {
-            // restaurar frecuencia previa si existe
-            if (isset($this->prevFrecuencia)) {
-                $this->frecuencia_S = $this->prevFrecuencia;
-                unset($this->prevFrecuencia);
-            }
+            // Si cambia a modo simple, limpiar los campos detallados
             $this->reset(['tiempo_anos', 'tiempo_meses', 'tiempo_dias']);
         }
-
-        // Limpiar resultados anteriores
+        // Limpiar resultados
         $this->reset(['result', 'interesSimple_S']);
     }
-
 
     // Nuevo: Convertir tiempo detallado a valor único según la frecuencia
     private function convertirTiempoDetallado($precision = 2)

@@ -25,43 +25,35 @@ trait formulas
 
     private function interesSimple()
     {
-        // limpiamos resultado previo
-        $this->result = null;
-        $this->interesSimple_S = null;
-        session()->forget('error');
+        try {
+            // Detectar automáticamente qué campo está vacío y calcularlo
+            $camposVacios = $this->detectarCamposVacios();
 
-        // detectar campos vacíos (antes de cualquier conversión)
-        $camposVacios = $this->detectarCamposVacios();
+            if (count($camposVacios) != 1) {
+                throw new \InvalidArgumentException("Debe dejar exactamente UN campo vacío para calcular. Campos vacíos encontrados: " . count($camposVacios));
+            }
 
-        if (count($camposVacios) != 1) {
-            session()->flash('error', "Debe dejar exactamente UN campo vacío para calcular. Campos vacíos encontrados: " . count($camposVacios));
-            return;
-        }
+            $campoACalcular = $camposVacios[0];
 
-        $campoACalcular = $camposVacios[0];
+            // Convertir tiempo según la frecuencia si es necesario
+            $tiempo = $this->tiempo_S;
+            if ($this->frecuencia_S > 1 && $tiempo) {
+                $tiempo = $tiempo / $this->frecuencia_S;
+            }
 
-        // --- Preparar tasa por periodo y número de periodos ---
-        // tasaInteres_S se asume como tasa ANUAL en %, luego:
-        if (is_null($this->tasaInteres_S) || $this->tasaInteres_S === '') {
-            $tasaPeriodo = null;
-        } else {
-            // tasa anual -> decimal
-            $tasaAnualDecimal = $this->tasaInteres_S / 100.0;
-            // tasa por periodo (ej: mensual = anual / 12)
-            $tasaPeriodo = $tasaAnualDecimal / max(1, $this->frecuencia_S);
-        }
+            // Convertir tasa de interés a decimal si es necesario
+            $tasaInteres = $this->tasaInteres_S ? $this->tasaInteres_S / 100 : null;
 
-        // tiempo_S debe estar en la misma unidad que la frecuencia:
-        // frecuencia 1 -> tiempo en años, 12 -> tiempo en meses, 365 -> tiempo en días.
-        $periodos = $this->tiempo_S; // si convertirTiempoDetallado ya asignó, aquí está en la unidad correcta
-
-        // Si tiempo es null pero fórmula requiere tiempo para el cálculo, detectarlo luego.
-
-        // Llamar a la fórmula adecuada
-        if ($this->formulaSeleccionada === 'interes') {
-            $this->calcularFormulaInteres($campoACalcular, $tasaPeriodo, $periodos);
-        } else {
-            $this->calcularFormulaMonto($campoACalcular, $tasaPeriodo, $periodos);
+            // Calcular según la fórmula seleccionada y el campo vacío
+            if ($this->formulaSeleccionada === 'interes') {
+                $this->calcularFormulaInteres($campoACalcular, $tasaInteres, $tiempo);
+            } else {
+                $this->calcularFormulaMonto($campoACalcular, $tasaInteres, $tiempo);
+            }
+        } catch (\Exception $e) {
+            $this->result = null;
+            $this->interesSimple_S = null;
+            throw new \InvalidArgumentException("Error en el cálculo: " . $e->getMessage());
         }
     }
 
@@ -86,120 +78,119 @@ trait formulas
         return $camposVacios;
     }
 
-    private function calcularFormulaInteres($campoACalcular, $tasaPeriodo, $periodos)
+    private function calcularFormulaInteres($campoACalcular, $tasaInteres, $tiempo)
     {
-        // Fórmula: I = C × i_periodo × periodos
+        // Fórmula: I = C × i × t
         switch ($campoACalcular) {
             case 'interesSimple_S':
-                if (is_null($this->capitalInicial_S) || is_null($tasaPeriodo) || is_null($periodos)) {
-                    session()->flash('error', "Faltan datos para calcular el interés.");
-                    return;
+                // I = C × i × t
+                if (is_null($this->capitalInicial_S) || is_null($tasaInteres) || is_null($tiempo)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular el interés.");
                 }
-                $this->result = $this->capitalInicial_S * $tasaPeriodo * $periodos;
+                $this->result = $this->capitalInicial_S * $tasaInteres * $tiempo;
                 $this->interesSimple_S = $this->result;
-                return;
+                break;
 
             case 'capitalInicial_S':
-                if (is_null($this->interesSimple_S) || is_null($tasaPeriodo) || is_null($periodos)) {
-                    session()->flash('error', "Faltan datos para calcular el capital.");
-                    return;
+                // C = I / (i × t)
+                if (is_null($this->interesSimple_S) || is_null($tasaInteres) || is_null($tiempo)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular el capital.");
                 }
-                if ($tasaPeriodo == 0 || $periodos == 0) {
-                    session()->flash('error', "La tasa por periodo y el número de periodos deben ser mayores a cero.");
-                    return;
+                if ($tasaInteres == 0 || $tiempo == 0) {
+                    throw new \InvalidArgumentException("La tasa de interés y el tiempo deben ser mayores a cero.");
                 }
-                $this->result = $this->interesSimple_S / ($tasaPeriodo * $periodos);
-                return;
+                $this->result = $this->interesSimple_S / ($tasaInteres * $tiempo);
+                break;
 
             case 'tasaInteres_S':
-                if (is_null($this->interesSimple_S) || is_null($this->capitalInicial_S) || is_null($periodos)) {
-                    session()->flash('error', "Faltan datos para calcular la tasa de interés.");
-                    return;
+                // i = I / (C × t)
+                if (is_null($this->interesSimple_S) || is_null($this->capitalInicial_S) || is_null($tiempo)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular la tasa de interés.");
                 }
-                if ($this->capitalInicial_S == 0 || $periodos == 0) {
-                    session()->flash('error', "El capital y el número de periodos deben ser mayores a cero.");
-                    return;
+                if ($this->capitalInicial_S == 0 || $tiempo == 0) {
+                    throw new \InvalidArgumentException("El capital y el tiempo deben ser mayores a cero.");
                 }
-                // tasaPeriodo decimal = I / (C * periodos)
-                $tasaPeriodoDecimal = $this->interesSimple_S / ($this->capitalInicial_S * $periodos);
-                // convertir a tasa anual en %
-                $tasaAnualDecimal = $tasaPeriodoDecimal * max(1, $this->frecuencia_S);
-                $this->result = $tasaAnualDecimal * 100; // en %
-                return;
+                $tasaDecimal = $this->interesSimple_S / ($this->capitalInicial_S * $tiempo);
+                $this->result = $tasaDecimal * 100; // Convertir a porcentaje
+                break;
 
             case 'tiempo_S':
-                if (is_null($this->interesSimple_S) || is_null($this->capitalInicial_S) || is_null($tasaPeriodo)) {
-                    session()->flash('error', "Faltan datos para calcular el tiempo.");
-                    return;
+                // t = I / (C × i)
+                if (is_null($this->interesSimple_S) || is_null($this->capitalInicial_S) || is_null($tasaInteres)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular el tiempo.");
                 }
-                if ($this->capitalInicial_S == 0 || $tasaPeriodo == 0) {
-                    session()->flash('error', "El capital y la tasa deben ser mayores a cero.");
-                    return;
+                if ($this->capitalInicial_S == 0 || $tasaInteres == 0) {
+                    throw new \InvalidArgumentException("El capital y la tasa de interés deben ser mayores a cero.");
                 }
-                // periodos = I / (C * i_periodo)
-                $periodosBase = $this->interesSimple_S / ($this->capitalInicial_S * $tasaPeriodo);
-                // resultado en la misma unidad que la frecuencia (periodos)
-                $this->result = $periodosBase;
-                return;
+                $tiempoBase = $this->interesSimple_S / ($this->capitalInicial_S * $tasaInteres);
+
+                // Ajustar según la frecuencia
+                if ($this->frecuencia_S > 1) {
+                    $this->result = $tiempoBase * $this->frecuencia_S;
+                } else {
+                    $this->result = $tiempoBase;
+                }
+                break;
         }
     }
 
-    private function calcularFormulaMonto($campoACalcular, $tasaPeriodo, $periodos)
+    private function calcularFormulaMonto($campoACalcular, $tasaInteres, $tiempo)
     {
-        // Fórmula: M = C (1 + i_periodo * periodos)
+        // Fórmula: M = C(1 + i × t)
         switch ($campoACalcular) {
             case 'montoFinal_S':
-                if (is_null($this->capitalInicial_S) || is_null($tasaPeriodo) || is_null($periodos)) {
-                    session()->flash('error', "Faltan datos para calcular el monto final.");
-                    return;
+                // M = C(1 + i × t)
+                if (is_null($this->capitalInicial_S) || is_null($tasaInteres) || is_null($tiempo)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular el monto final.");
                 }
-                $this->result = $this->capitalInicial_S * (1 + $tasaPeriodo * $periodos);
+                $this->result = $this->capitalInicial_S * (1 + $tasaInteres * $tiempo);
                 $this->interesSimple_S = $this->result - $this->capitalInicial_S;
-                return;
+                break;
 
             case 'capitalInicial_S':
-                if (is_null($this->montoFinal_S) || is_null($tasaPeriodo) || is_null($periodos)) {
-                    session()->flash('error', "Faltan datos para calcular el capital inicial.");
-                    return;
+                // C = M / (1 + i × t)
+                if (is_null($this->montoFinal_S) || is_null($tasaInteres) || is_null($tiempo)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular el capital inicial.");
                 }
-                $denominador = 1 + $tasaPeriodo * $periodos;
+                $denominador = 1 + $tasaInteres * $tiempo;
                 if ($denominador == 0) {
-                    session()->flash('error', "Error: denominador cero en el cálculo.");
-                    return;
+                    throw new \InvalidArgumentException("Error: denominador cero en el cálculo.");
                 }
                 $this->result = $this->montoFinal_S / $denominador;
                 $this->interesSimple_S = $this->montoFinal_S - $this->result;
-                return;
+                break;
 
             case 'tasaInteres_S':
-                if (is_null($this->montoFinal_S) || is_null($this->capitalInicial_S) || is_null($periodos)) {
-                    session()->flash('error', "Faltan datos para calcular la tasa de interés.");
-                    return;
+                // i = (M - C) / (C × t)
+                if (is_null($this->montoFinal_S) || is_null($this->capitalInicial_S) || is_null($tiempo)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular la tasa de interés.");
                 }
-                if ($this->capitalInicial_S == 0 || $periodos == 0) {
-                    session()->flash('error', "El capital y el número de periodos deben ser mayores a cero.");
-                    return;
+                if ($this->capitalInicial_S == 0 || $tiempo == 0) {
+                    throw new \InvalidArgumentException("El capital y el tiempo deben ser mayores a cero.");
                 }
-                // tasaPeriodoDecimal = (M - C) / (C * periodos)
-                $tasaPeriodoDecimal = ($this->montoFinal_S - $this->capitalInicial_S) / ($this->capitalInicial_S * $periodos);
-                $tasaAnualDecimal = $tasaPeriodoDecimal * max(1, $this->frecuencia_S);
-                $this->result = $tasaAnualDecimal * 100; // en %
+                $tasaDecimal = ($this->montoFinal_S - $this->capitalInicial_S) / ($this->capitalInicial_S * $tiempo);
+                $this->result = $tasaDecimal * 100; // Convertir a porcentaje
                 $this->interesSimple_S = $this->montoFinal_S - $this->capitalInicial_S;
-                return;
+                break;
 
             case 'tiempo_S':
-                if (is_null($this->montoFinal_S) || is_null($this->capitalInicial_S) || is_null($tasaPeriodo)) {
-                    session()->flash('error', "Faltan datos para calcular el tiempo.");
-                    return;
+                // t = (M - C) / (C × i)
+                if (is_null($this->montoFinal_S) || is_null($this->capitalInicial_S) || is_null($tasaInteres)) {
+                    throw new \InvalidArgumentException("Faltan datos para calcular el tiempo.");
                 }
-                if ($this->capitalInicial_S == 0 || $tasaPeriodo == 0) {
-                    session()->flash('error', "El capital y la tasa deben ser mayores a cero.");
-                    return;
+                if ($this->capitalInicial_S == 0 || $tasaInteres == 0) {
+                    throw new \InvalidArgumentException("El capital y la tasa de interés deben ser mayores a cero.");
                 }
-                $periodosBase = ($this->montoFinal_S - $this->capitalInicial_S) / ($this->capitalInicial_S * $tasaPeriodo);
-                $this->result = $periodosBase;
+                $tiempoBase = ($this->montoFinal_S - $this->capitalInicial_S) / ($this->capitalInicial_S * $tasaInteres);
+
+                // Ajustar según la frecuencia
+                if ($this->frecuencia_S > 1) {
+                    $this->result = $tiempoBase * $this->frecuencia_S;
+                } else {
+                    $this->result = $tiempoBase;
+                }
                 $this->interesSimple_S = $this->montoFinal_S - $this->capitalInicial_S;
-                return;
+                break;
         }
     }
 

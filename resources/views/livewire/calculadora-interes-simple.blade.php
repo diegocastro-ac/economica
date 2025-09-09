@@ -1,4 +1,5 @@
 <div>
+    {{-- The Master doesn't talk, he acts. --}}
     <form class="space-y-8" wire:submit.prevent="calcular('interesSimple')">
 
         <!-- Selector de fórmula -->
@@ -33,9 +34,9 @@
                         </label>
                         <select wire:model="frecuencia_S"
                             class="px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-colors focus:outline-none focus:border-gray-900 dark:focus:border-gray-400">
-                            <option value="1">Años</option>
-                            <option value="12">Meses</option>
-                            <option value="365">Días</option>
+                            <option value="1">Anual</option>
+                            <option value="12">Mensual</option>
+                            <option value="365">Diario</option>
                         </select>
                     </div>
                 @elseif ($campo === 'tiempo')
