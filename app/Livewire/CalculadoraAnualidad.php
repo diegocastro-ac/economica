@@ -2,16 +2,16 @@
 
 namespace App\Livewire;
 
-use App\traits\formulas;
+use App\traits\Anualidades;
 use Livewire\Component;
 
 class CalculadoraAnualidad extends Component
 {
-    use formulas;
+    use Anualidades;
 
     public $formulaSeleccionada = 'valor_futuro'; // Fórmula por defecto
 
-    // Control para el modo de entrada de tiempo (reutilizando la funcionalidad de interés simple)
+    // Control para el modo de entrada de tiempo
     public $modoTiempoDetallado = false;
     public $tiempo_anos = null;
     public $tiempo_meses = null;
@@ -21,15 +21,14 @@ class CalculadoraAnualidad extends Component
     public function getFormulasOptions()
     {
         return [
-            'valor_futuro' => 'VF = A × [(1+i)^n - 1] / i (Valor Futuro de Anualidad)',
-            'valor_presente' => 'VA = A × [1 - (1+i)^-n] / i (Valor Presente de Anualidad)'
+            'valor_futuro' => 'VF = A x [(1+i)^n - 1] / i (Valor Futuro de Anualidad)',
+            'valor_presente' => 'VP = A x [1 - (1+i)^-n] / i (Valor Presente de Anualidad)'
         ];
     }
 
     // Método que se ejecuta cuando cambia la fórmula seleccionada
     public function updatedFormulaSeleccionada()
     {
-        // Limpiar resultados cuando cambie la fórmula
         $this->reset(['result', 'valorFuturoAnualidad', 'valorPresenteAnualidad']);
     }
 
@@ -37,13 +36,10 @@ class CalculadoraAnualidad extends Component
     public function updatedModoTiempoDetallado()
     {
         if ($this->modoTiempoDetallado) {
-            // Si cambia a modo detallado, limpiar el campo simple
             $this->tiempo_S = null;
         } else {
-            // Si cambia a modo simple, limpiar los campos detallados
             $this->reset(['tiempo_anos', 'tiempo_meses', 'tiempo_dias']);
         }
-        // Limpiar resultados
         $this->reset(['result', 'valorFuturoAnualidad', 'valorPresenteAnualidad']);
     }
 
@@ -59,14 +55,17 @@ class CalculadoraAnualidad extends Component
         $dias = floatval($this->tiempo_dias ?? 0);
 
         switch ($this->frecuencia_S) {
-            case 1: // queremos periodos en AÑOS
+            case 1: // AÑOS
                 $valor = $anos + ($meses / 12) + ($dias / 365);
                 break;
-            case 12: // queremos periodos en MESES
+            case 12: // MESES
                 $valor = ($anos * 12) + $meses + ($dias / 30);
                 break;
-            case 365: // queremos periodos en DÍAS
-                $valor = ($anos * 365) + ($meses * 30) + $dias;
+            case 4: // TRIMESTRAL
+                $valor = ($anos * 4) + ($meses / 3) + ($dias / 90);
+                break;
+            case 2: // SEMESTRAL
+                $valor = ($anos * 2) + ($meses / 6) + ($dias / 182);
                 break;
             default:
                 $valor = $anos + ($meses / 12) + ($dias / 365);
@@ -76,18 +75,9 @@ class CalculadoraAnualidad extends Component
     }
 
     // Override del método calcular para manejar el tiempo detallado
-    public function calcular(String $tipo)
+    public function calcular()
     {
-        // Si está en modo tiempo detallado, convertir a tiempo simple
-        if ($this->modoTiempoDetallado) {
-            $this->tiempo_S = $this->convertirTiempoDetallado();
-        }
-
-        // Llamar al método del trait
-        if ($tipo === "anualidad") {
-            $this->anualidad();
-        }
-        // Aquí estarían las otras opciones como "interesSimple", "interesCompuesto"
+        $this->calcularAnualidades();
     }
 
     // Determinar qué campos mostrar según la fórmula seleccionada
@@ -104,7 +94,7 @@ class CalculadoraAnualidad extends Component
                 ];
             case 'valor_presente':
                 return [
-                    'valorPresenteAnualidad' => ['label' => 'Valor Presente (VA)', 'placeholder' => '50,000'],
+                    'valorPresenteAnualidad' => ['label' => 'Valor Presente (VP)', 'placeholder' => '50,000'],
                     'anualidad' => ['label' => 'Anualidad (A)', 'placeholder' => '5,000'],
                     'tasaInteres_S' => ['label' => 'Tasa de Interés (i) %', 'placeholder' => '5.5'],
                     'tiempo' => ['label' => 'Número de Períodos (n)', 'placeholder' => '10'],

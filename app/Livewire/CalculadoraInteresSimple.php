@@ -2,16 +2,16 @@
 
 namespace App\Livewire;
 
-use App\traits\formulas;
+use App\traits\InteresSimple;
 use Livewire\Component;
 
 class CalculadoraInteresSimple extends Component
 {
-    use formulas;
+    use InteresSimple;
 
     public $formulaSeleccionada = 'interes'; // Fórmula por defecto
 
-    // Control para el modo de entrada de tiempo detallado
+    // Control para el modo de entrada de tiempo
     public $modoTiempoDetallado = false;
     public $tiempo_anos = null;
     public $tiempo_meses = null;
@@ -33,21 +33,18 @@ class CalculadoraInteresSimple extends Component
         $this->reset(['result', 'interesSimple_S']);
     }
 
-    // Nuevo: Método que se ejecuta cuando cambia el modo de tiempo
+    // Método que se ejecuta cuando cambia el modo de tiempo
     public function updatedModoTiempoDetallado()
     {
         if ($this->modoTiempoDetallado) {
-            // Si cambia a modo detallado, limpiar el campo simple
             $this->tiempo_S = null;
         } else {
-            // Si cambia a modo simple, limpiar los campos detallados
             $this->reset(['tiempo_anos', 'tiempo_meses', 'tiempo_dias']);
         }
-        // Limpiar resultados
         $this->reset(['result', 'interesSimple_S']);
     }
 
-    // Nuevo: Convertir tiempo detallado a valor único según la frecuencia
+    // Convertir tiempo detallado a valor único según la frecuencia
     private function convertirTiempoDetallado($precision = 2)
     {
         if (!$this->modoTiempoDetallado) {
@@ -59,40 +56,31 @@ class CalculadoraInteresSimple extends Component
         $dias = floatval($this->tiempo_dias ?? 0);
 
         switch ($this->frecuencia_S) {
-            case 1: // queremos periodos en AÑOS
+            case 1: // AÑOS
                 $valor = $anos + ($meses / 12) + ($dias / 365);
                 break;
-            case 12: // queremos periodos en MESES
-                $valor = ($anos * 12) + $meses + ($dias / 30); // aquí 30 días/mes aproximado
+            case 12: // MESES
+                $valor = ($anos * 12) + $meses + ($dias / 30);
                 break;
-            case 365: // queremos periodos en DÍAS
+            case 365: // DÍAS
                 $valor = ($anos * 365) + ($meses * 30) + $dias;
                 break;
             default:
                 $valor = $anos + ($meses / 12) + ($dias / 365);
         }
 
-        // <-- redondeamos para que coincida con el campo "tiempo simple"
         return round($valor, $precision);
     }
 
-
     // Override del método calcular para manejar el tiempo detallado
-    public function calcular(String $tipo)
+    public function calcular()
     {
         // Si está en modo tiempo detallado, convertir a tiempo simple
         if ($this->modoTiempoDetallado) {
             $this->tiempo_S = $this->convertirTiempoDetallado();
         }
 
-        // Llamar al método original del trait
-        if ($tipo === "interesSimple") {
-            $this->interesSimple();
-        } else if ($tipo === "interesCompuesto") {
-            $this->interesCompuesto();
-        } else {
-            $this->anualidad();
-        }
+        $this->calcularInteresSimple();
     }
 
     // Determinar qué campos mostrar según la fórmula seleccionada
@@ -104,7 +92,7 @@ class CalculadoraInteresSimple extends Component
                     'interesSimple_S' => ['label' => 'Interés (I)', 'placeholder' => '5,000'],
                     'capitalInicial_S' => ['label' => 'Capital (C)', 'placeholder' => '10,000'],
                     'tasaInteres_S' => ['label' => 'Tasa de Interés (i) %', 'placeholder' => '5.5'],
-                    'tiempo' => ['label' => 'Tiempo (t)', 'placeholder' => '2'], // Cambiado para manejo especial
+                    'tiempo' => ['label' => 'Tiempo (t)', 'placeholder' => '2'],
                     'frecuencia_S' => ['label' => 'Unidades de Tiempo', 'placeholder' => '']
                 ];
             case 'monto':
@@ -112,7 +100,7 @@ class CalculadoraInteresSimple extends Component
                     'montoFinal_S' => ['label' => 'Monto Final (M)', 'placeholder' => '15,000'],
                     'capitalInicial_S' => ['label' => 'Capital (C)', 'placeholder' => '10,000'],
                     'tasaInteres_S' => ['label' => 'Tasa de Interés (i) %', 'placeholder' => '5.5'],
-                    'tiempo' => ['label' => 'Tiempo (t)', 'placeholder' => '2'], // Cambiado para manejo especial
+                    'tiempo' => ['label' => 'Tiempo (t)', 'placeholder' => '2'],
                     'frecuencia_S' => ['label' => 'Unidades de Tiempo', 'placeholder' => '']
                 ];
             default:
@@ -120,7 +108,7 @@ class CalculadoraInteresSimple extends Component
         }
     }
 
-    // Nuevo: Método para obtener el texto descriptivo del tiempo
+    // Método para obtener el texto descriptivo del tiempo
     public function getTiempoDescriptivo()
     {
         if (!$this->modoTiempoDetallado) {

@@ -1,5 +1,5 @@
 <div>
-    <form class="space-y-8" wire:submit.prevent="calcular('anualidad')">
+    <form class="space-y-8" wire:submit.prevent="calcular()">
 
         <!-- Selector de fórmula -->
         <div class="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-6 mb-6">
@@ -41,16 +41,11 @@
                         </select>
                     </div>
                 @elseif ($campo === 'tiempo')
-                    <!-- Campo especial para tiempo/períodos con opción de entrada detallada -->
+                    <!-- Campo especial para períodos -->
                     <div class="flex flex-col md:col-span-2">
                         <div class="flex justify-between items-center mb-2">
                             <label class="text-sm font-medium text-gray-900 dark:text-gray-100">
                                 {{ $config['label'] }}
-                            </label>
-                            <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model.live="modoTiempoDetallado"
-                                    class="mr-2 w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-                                <span class="text-sm text-gray-600 dark:text-gray-400">Entrada detallada</span>
                             </label>
                         </div>
 
@@ -62,48 +57,6 @@
                             <div class="mt-1 text-xs text-gray-500 dark:text-gray-400">
                                 Número de períodos de pago según la frecuencia seleccionada
                             </div>
-                        @else
-                            <!-- Entrada detallada de tiempo -->
-                            <div class="grid grid-cols-3 gap-3">
-                                <div>
-                                    <label class="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Años</label>
-                                    <input wire:model="tiempo_anos" type="number" min="0"
-                                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-colors focus:outline-none focus:border-gray-900 dark:focus:border-gray-400"
-                                        placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Meses</label>
-                                    <input wire:model="tiempo_meses" type="number" min="0" max="11"
-                                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-colors focus:outline-none focus:border-gray-900 dark:focus:border-gray-400"
-                                        placeholder="0">
-                                </div>
-                                <div>
-                                    <label class="text-xs text-gray-600 dark:text-gray-400 mb-1 block">Días</label>
-                                    <input wire:model="tiempo_dias" type="number" min="0" max="364"
-                                        class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-md text-base text-gray-900 dark:text-gray-100 bg-white dark:bg-gray-800 transition-colors focus:outline-none focus:border-gray-900 dark:focus:border-gray-400"
-                                        placeholder="0">
-                                </div>
-                            </div>
-
-                            @if ($this->getTiempoDescriptivo())
-                                <div class="mt-2 text-sm text-gray-600 dark:text-gray-400">
-                                    <span class="font-medium">Tiempo total:</span> {{ $this->getTiempoDescriptivo() }}
-                                    @if ($this->convertirTiempoDetallado())
-                                        <span class="ml-2">(≈
-                                            {{ number_format($this->convertirTiempoDetallado(), 0) }}
-                                            @if ($frecuencia_S == 1)
-                                                períodos anuales)
-                                            @elseif ($frecuencia_S == 12)
-                                                períodos mensuales)
-                                            @elseif ($frecuencia_S == 4)
-                                                períodos trimestrales)
-                                            @else
-                                                períodos semestrales)
-                                            @endif
-                                        </span>
-                                    @endif
-                                </div>
-                            @endif
                         @endif
                     </div>
                 @else
@@ -129,7 +82,7 @@
                     @if ($formulaSeleccionada === 'valor_futuro')
                         VF = A x [(1+i)ⁿ - 1] / i
                     @else
-                        VA = A x [1 - (1+i)⁻ⁿ] / i
+                        VP = A x [1 - (1+i)⁻ⁿ] / i
                     @endif
                 </span>
             </p>
@@ -138,13 +91,13 @@
                 @if ($formulaSeleccionada === 'valor_futuro')
                     VF=Valor Futuro, A=Anualidad, i=Tasa de interés por período, n=Número de períodos
                 @else
-                    VA=Valor Presente, A=Anualidad, i=Tasa de interés por período, n=Número de períodos
+                    VP=Valor Presente, A=Anualidad, i=Tasa de interés por período, n=Número de períodos
                 @endif
             </p>
         </div>
 
         <button type="submit"
-            class="w-full m-2 py-4 bg-green-600 dark:bg-green-700 text-white border-0 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-green-700 dark:hover:bg-green-600 active:scale-[0.98] transform">
+            class="w-full m-2 py-4 bg-gray-900 dark:bg-gray-700 text-white border-0 rounded-2xl text-base font-semibold cursor-pointer transition-all duration-200 hover:bg-gray-700 dark:hover:bg-gray-600 active:scale-[0.98] transform">
             Calcular Campo Vacío
         </button>
     </form>
@@ -160,7 +113,7 @@
                         @if ($formulaSeleccionada === 'valor_futuro')
                             VF = A x [(1+i)ⁿ - 1] / i
                         @else
-                            VA = A x [1 - (1+i)⁻ⁿ] / i
+                            VP = A x [1 - (1+i)⁻ⁿ] / i
                         @endif
                     </span>
                 </div>
