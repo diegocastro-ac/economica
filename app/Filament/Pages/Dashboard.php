@@ -11,6 +11,6 @@ class Dashboard extends PagesDashboard
 
     public function getHeading(): string|Htmlable
     {
-        return 'TITULO';
+        return 'Dashboard';
     }
 }

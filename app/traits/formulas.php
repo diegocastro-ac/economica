@@ -32,11 +32,11 @@ trait formulas
     private function interesSimple()
     {
         try {
-            // Detectar automáticamente qué campo está vacío y calcularlo
             $camposVacios = $this->detectarCamposVacios();
 
             if (count($camposVacios) != 1) {
-                throw new \InvalidArgumentException("Debe dejar exactamente UN campo vacío para calcular. Campos vacíos encontrados: " . count($camposVacios));
+                session()->flash('error', "Debe dejar exactamente UN campo vacío. Campos vacíos encontrados: " . count($camposVacios));
+                return;
             }
 
             $campoACalcular = $camposVacios[0];

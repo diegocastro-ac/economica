@@ -1,5 +1,4 @@
 <div>
-    {{-- The Master doesn't talk, he acts. --}}
     <form class="space-y-8" wire:submit.prevent="calcular('interesSimple')">
 
         <!-- Selector de fórmula -->
@@ -121,9 +120,9 @@
                 <strong>Fórmula seleccionada:</strong>
                 <span class="font-mono text-lg text-gray-900 dark:text-gray-100">
                     @if ($formulaSeleccionada === 'interes')
-                        I = C × i × t
+                        I = C x i x t
                     @else
-                        M = C(1 + i × t)
+                        M = C(1 + i x t)
                     @endif
                 </span>
             </p>
@@ -152,9 +151,9 @@
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Resultado</h3>
                     <span class="text-sm text-gray-500 dark:text-gray-400 font-mono">
                         @if ($formulaSeleccionada === 'interes')
-                            I = C × i × t
+                            I = C x i x t
                         @else
-                            M = C(1 + i × t)
+                            M = C(1 + i x t)
                         @endif
                     </span>
                 </div>

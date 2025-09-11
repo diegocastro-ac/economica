@@ -1,5 +1,4 @@
 <div>
-    {{-- Calculadora de Anualidades --}}
     <form class="space-y-8" wire:submit.prevent="calcular('anualidad')">
 
         <!-- Selector de fórmula -->
@@ -128,9 +127,9 @@
                 <strong>Fórmula seleccionada:</strong>
                 <span class="font-mono text-lg text-gray-900 dark:text-gray-100">
                     @if ($formulaSeleccionada === 'valor_futuro')
-                        VF = A × [(1+i)ⁿ - 1] / i
+                        VF = A x [(1+i)ⁿ - 1] / i
                     @else
-                        VA = A × [1 - (1+i)⁻ⁿ] / i
+                        VA = A x [1 - (1+i)⁻ⁿ] / i
                     @endif
                 </span>
             </p>
@@ -159,9 +158,9 @@
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100">Resultado</h3>
                     <span class="text-sm text-gray-500 dark:text-gray-400 font-mono">
                         @if ($formulaSeleccionada === 'valor_futuro')
-                            VF = A × [(1+i)ⁿ - 1] / i
+                            VF = A x [(1+i)ⁿ - 1] / i
                         @else
-                            VA = A × [1 - (1+i)⁻ⁿ] / i
+                            VA = A x [1 - (1+i)⁻ⁿ] / i
                         @endif
                     </span>
                 </div>
@@ -240,22 +239,6 @@
                         <br><small>(Calculado desde entrada detallada)</small>
                     @endif
                 </p>
-
-                <!-- Información adicional sobre los pagos -->
-                @if (isset($anualidad) && $anualidad > 0 && isset($tiempo_S) && $tiempo_S > 0)
-                    <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <span class="text-gray-500 dark:text-gray-400">Total de pagos:</span>
-                                <div class="font-semibold">${{ number_format($anualidad * $tiempo_S, 2) }}</div>
-                            </div>
-                            <div>
-                                <span class="text-gray-500 dark:text-gray-400">Número de pagos:</span>
-                                <div class="font-semibold">{{ number_format($tiempo_S, 0) }}</div>
-                            </div>
-                        </div>
-                    </div>
-                @endif
             </div>
         </div>
     @endif

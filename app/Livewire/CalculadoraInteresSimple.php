@@ -11,7 +11,7 @@ class CalculadoraInteresSimple extends Component
 
     public $formulaSeleccionada = 'interes'; // Fórmula por defecto
 
-    // Nuevo: Control para el modo de entrada de tiempo
+    // Control para el modo de entrada de tiempo detallado
     public $modoTiempoDetallado = false;
     public $tiempo_anos = null;
     public $tiempo_meses = null;
@@ -21,8 +21,8 @@ class CalculadoraInteresSimple extends Component
     public function getFormulasOptions()
     {
         return [
-            'interes' => 'I = C × i × t (Calcular Interés)',
-            'monto' => 'M = C(1 + i × t) (Calcular Monto/Capital/Tasa/Tiempo)'
+            'interes' => 'I = C x i x t (Calcular Interés)',
+            'monto' => 'M = C(1 + i x t) (Calcular Monto/Capital/Tasa/Tiempo)'
         ];
     }
 
