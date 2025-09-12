@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Filament\Pages;
+
+use Filament\Pages\Page;
+use Illuminate\Contracts\Support\Htmlable;
+
+class Anualidad extends Page
+{
+    protected string $view = 'filament.pages.anualidad';
+
+    public function getHeading(): string|Htmlable
+    {
+        return '';
+    }
+
+    protected array $extraBodyAttributes = [
+        'class' => 'bg-gray-100 dark:bg-black',
+    ];
+
+    //public function getMaxContentWidth(): Width
+    //    {
+    //        return Width::Full;
+    //    }
+
+    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-arrow-trending-up';
+
+    protected static string|null|\BackedEnum $activeNavigationIcon = 'heroicon-c-arrow-down-left';
+}

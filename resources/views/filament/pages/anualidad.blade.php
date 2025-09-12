@@ -5,16 +5,15 @@
             <div class="max-w-2xl mx-auto">
 
                 <div class="mb-8 text-center">
-                    <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Calculadora de Interés Simple
+                    <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Calculadora de Anualidad
                     </h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">Calcula el interés simple y cualquier variable de
+                    <p class="text-gray-600 dark:text-gray-400 text-lg">Calcula la anualidad y cualquier variable de
                         sus fórmulas</p>
                 </div>
 
                 <section id="calculadora">
-                    <livewire:calculadora-interes-simple />
+                    <livewire:calculadora-anualidad />
                 </section>
-
             </div>
         </div>
     </div>

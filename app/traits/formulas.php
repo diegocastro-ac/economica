@@ -1,10 +1,9 @@
 <?php
 
 namespace App\traits;
-
+// NO SE USA
 trait formulas
 {
-
     public float $result;
     public string $resultMessage = '';
 
@@ -20,8 +19,8 @@ trait formulas
 
             $this->interesCompuesto();
         } else
-
             $this->anualidad();
+        }
     }
 
     private function interesSimple()
@@ -36,13 +35,28 @@ trait formulas
             $tasaInteres = $this->tasaInteres_S / 100;
         }
 
-        //calcular monto final
-        if (empty($this->montoFinal_S) && $this->capitalInicial_S && $this->tasaInteres_S && $this->tiempo_S) {
-            $this->result = $this->capitalInicial_S * (1 + $tasaInteres * $tiempo);
 
-            $this->interesSimple_S = $this->result - $this->capitalInicial_S;
+            // Convertir tiempo según la frecuencia si es necesario
+            $tiempo = $this->tiempo_S;
+            if ($this->frecuencia_S > 1 && $tiempo) {
+                $tiempo = $tiempo / $this->frecuencia_S;
+            }
+
+            // Convertir tasa de interés a decimal si es necesario
+            $tasaInteres = $this->tasaInteres_S ? $this->tasaInteres_S / 100 : null;
+
+            // Calcular según la fórmula seleccionada y el campo vacío
+            if ($this->formulaSeleccionada === 'interes') {
+                $this->calcularFormulaInteres($campoACalcular, $tasaInteres, $tiempo);
+            } else {
+                $this->calcularFormulaMonto($campoACalcular, $tasaInteres, $tiempo);
+            }
+        } catch (\Exception $e) {
+            $this->result = null;
+            $this->interesSimple_S = null;
+            throw new \InvalidArgumentException("Error en el cálculo: " . $e->getMessage());
         }
-
+    }
         //calcular capital inicial
         else if (empty($this->capitalInicial_S) && $this->montoFinal_S && $this->tasaInteres_S && $this->tiempo_S) {
             $this->result = $this->montoFinal_S / (1 + $tasaInteres * $tiempo);
@@ -154,5 +168,6 @@ trait formulas
             default:
                 return 'períodos';
         }
+
     }
 }

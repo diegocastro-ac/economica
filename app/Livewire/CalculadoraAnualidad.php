@@ -2,14 +2,14 @@
 
 namespace App\Livewire;
 
-use App\traits\InteresSimple;
+use App\traits\Anualidades;
 use Livewire\Component;
 
-class CalculadoraInteresSimple extends Component
+class CalculadoraAnualidad extends Component
 {
-    use InteresSimple;
+    use Anualidades;
 
-    public $formulaSeleccionada = 'interes'; // Fórmula por defecto
+    public $formulaSeleccionada = 'valor_futuro'; // Fórmula por defecto
 
     // Control para el modo de entrada de tiempo
     public $modoTiempoDetallado = false;
@@ -17,20 +17,19 @@ class CalculadoraInteresSimple extends Component
     public $tiempo_meses = null;
     public $tiempo_dias = null;
 
-    // Opciones disponibles para el combobox de fórmulas
+    // Opciones disponibles para el combobox de fórmulas de anualidad
     public function getFormulasOptions()
     {
         return [
-            'interes' => 'I = C x i x t (Calcular Interés)',
-            'monto' => 'M = C(1 + i x t) (Calcular Monto/Capital/Tasa/Tiempo)'
+            'valor_futuro' => 'VF = A x [(1+i)^n - 1] / i (Valor Futuro de Anualidad)',
+            'valor_presente' => 'VP = A x [1 - (1+i)^-n] / i (Valor Presente de Anualidad)'
         ];
     }
 
     // Método que se ejecuta cuando cambia la fórmula seleccionada
     public function updatedFormulaSeleccionada()
     {
-        // Limpiar resultados cuando cambie la fórmula
-        $this->reset(['result', 'interesSimple_S']);
+        $this->reset(['result', 'valorFuturoAnualidad', 'valorPresenteAnualidad']);
     }
 
     // Método que se ejecuta cuando cambia el modo de tiempo
@@ -41,7 +40,7 @@ class CalculadoraInteresSimple extends Component
         } else {
             $this->reset(['tiempo_anos', 'tiempo_meses', 'tiempo_dias']);
         }
-        $this->reset(['result', 'interesSimple_S']);
+        $this->reset(['result', 'valorFuturoAnualidad', 'valorPresenteAnualidad']);
     }
 
     // Convertir tiempo detallado a valor único según la frecuencia
@@ -62,8 +61,11 @@ class CalculadoraInteresSimple extends Component
             case 12: // MESES
                 $valor = ($anos * 12) + $meses + ($dias / 30);
                 break;
-            case 365: // DÍAS
-                $valor = ($anos * 365) + ($meses * 30) + $dias;
+            case 4: // TRIMESTRAL
+                $valor = ($anos * 4) + ($meses / 3) + ($dias / 90);
+                break;
+            case 2: // SEMESTRAL
+                $valor = ($anos * 2) + ($meses / 6) + ($dias / 182);
                 break;
             default:
                 $valor = $anos + ($meses / 12) + ($dias / 365);
@@ -75,33 +77,28 @@ class CalculadoraInteresSimple extends Component
     // Override del método calcular para manejar el tiempo detallado
     public function calcular()
     {
-        // Si está en modo tiempo detallado, convertir a tiempo simple
-        if ($this->modoTiempoDetallado) {
-            $this->tiempo_S = $this->convertirTiempoDetallado();
-        }
-
-        $this->calcularInteresSimple();
+        $this->calcularAnualidades();
     }
 
     // Determinar qué campos mostrar según la fórmula seleccionada
     public function getCamposFormula()
     {
         switch ($this->formulaSeleccionada) {
-            case 'interes':
+            case 'valor_futuro':
                 return [
-                    'interesSimple_S' => ['label' => 'Interés (I)', 'placeholder' => '5,000'],
-                    'capitalInicial_S' => ['label' => 'Capital (C)', 'placeholder' => '10,000'],
+                    'valorFuturoAnualidad' => ['label' => 'Valor Futuro (VF)', 'placeholder' => '100,000'],
+                    'anualidad' => ['label' => 'Anualidad (A)', 'placeholder' => '5,000'],
                     'tasaInteres_S' => ['label' => 'Tasa de Interés (i) %', 'placeholder' => '5.5'],
-                    'tiempo' => ['label' => 'Tiempo (t)', 'placeholder' => '2'],
-                    'frecuencia_S' => ['label' => 'Unidades de Tiempo', 'placeholder' => '']
+                    'tiempo' => ['label' => 'Número de Períodos (n)', 'placeholder' => '10'],
+                    'frecuencia_S' => ['label' => 'Frecuencia de Pagos', 'placeholder' => '']
                 ];
-            case 'monto':
+            case 'valor_presente':
                 return [
-                    'montoFinal_S' => ['label' => 'Monto Final (M)', 'placeholder' => '15,000'],
-                    'capitalInicial_S' => ['label' => 'Capital (C)', 'placeholder' => '10,000'],
+                    'valorPresenteAnualidad' => ['label' => 'Valor Presente (VP)', 'placeholder' => '50,000'],
+                    'anualidad' => ['label' => 'Anualidad (A)', 'placeholder' => '5,000'],
                     'tasaInteres_S' => ['label' => 'Tasa de Interés (i) %', 'placeholder' => '5.5'],
-                    'tiempo' => ['label' => 'Tiempo (t)', 'placeholder' => '2'],
-                    'frecuencia_S' => ['label' => 'Unidades de Tiempo', 'placeholder' => '']
+                    'tiempo' => ['label' => 'Número de Períodos (n)', 'placeholder' => '10'],
+                    'frecuencia_S' => ['label' => 'Frecuencia de Pagos', 'placeholder' => '']
                 ];
             default:
                 return [];
@@ -129,17 +126,9 @@ class CalculadoraInteresSimple extends Component
         return count($partes) > 0 ? implode(', ', $partes) : 'Sin tiempo especificado';
     }
 
-    public float $tasaInteres_S;
-    public float $capitalInicial_S;
-    public float $montoFinal_S;
-    public int $frecuencia_S = 1;
-    public float $tiempo_S;
-    public float $interesSimple_S;
-    
-
     public function render()
     {
-        return view('livewire.calculadora-interes-simple', [
+        return view('livewire.calculadora-anualidad', [
             'formulasOptions' => $this->getFormulasOptions(),
             'camposFormula' => $this->getCamposFormula()
         ]);
