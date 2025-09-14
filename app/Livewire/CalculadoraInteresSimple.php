@@ -129,14 +129,6 @@ class CalculadoraInteresSimple extends Component
         return count($partes) > 0 ? implode(', ', $partes) : 'Sin tiempo especificado';
     }
 
-    public float $tasaInteres_S;
-    public float $capitalInicial_S;
-    public float $montoFinal_S;
-    public int $frecuencia_S = 1;
-    public float $tiempo_S;
-    public float $interesSimple_S;
-    
-
     public function render()
     {
         return view('livewire.calculadora-interes-simple', [
