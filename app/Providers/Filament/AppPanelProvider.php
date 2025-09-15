@@ -25,10 +25,10 @@ class AppPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
+            ->brandName(config('app.name'))
             ->id('app')
             ->path('/')
             ->colors(['primary' => Color::Gray])
-            ->brandLogo('https://laravel.com/img/logomark.min.svg')
             ->brandLogoHeight('40px')
             ->login()
             ->registration()
@@ -44,6 +44,10 @@ class AppPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->widgets([
                 Widgets\AccountWidget::class,
+            ])
+            ->navigationGroups([
+                'Primer Corte',
+                'Segundo Corte'
             ])
             ->middleware([
                 EncryptCookies::class,
