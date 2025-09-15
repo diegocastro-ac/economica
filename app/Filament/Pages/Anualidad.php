@@ -9,9 +9,22 @@ class Anualidad extends Page
 {
     protected string $view = 'filament.pages.anualidad';
 
+    protected static ?string $slug = 'primer-corte/anualidad';
+
+    protected static ?int $navigationSort = 2;
+
+    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-arrow-trending-up';
+
+    protected static string|null|\BackedEnum $activeNavigationIcon = 'heroicon-c-arrow-down-left';
+
     public function getHeading(): string|Htmlable
     {
         return '';
+    }
+
+    public static function getNavigationGroup(): ?string
+    {
+        return 'Primer Corte';
     }
 
     protected array $extraBodyAttributes = [
@@ -22,8 +35,4 @@ class Anualidad extends Page
     //    {
     //        return Width::Full;
     //    }
-
-    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-arrow-trending-up';
-
-    protected static string|null|\BackedEnum $activeNavigationIcon = 'heroicon-c-arrow-down-left';
 }
