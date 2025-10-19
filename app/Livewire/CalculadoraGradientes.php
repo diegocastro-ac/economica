@@ -9,243 +9,305 @@ class CalculadoraGradientes extends Component
 {
     use Gradientes;
 
-    public $tipoGradiente = 'aritmetico_vencido'; // Opciones: aritmetico_vencido, aritmetico_anticipado, geometrico_vencido, geometrico_anticipado
+    public $formulaSeleccionada = 'vp_aritmetico_vencido'; // Fórmula por defecto
 
-    // Opciones disponibles para el selector de tipo de gradiente
-    public function getTiposGradienteOptions()
+    // Opciones disponibles para el combobox de fórmulas
+    public function getFormulasOptions()
     {
         return [
-            'aritmetico_vencido' => 'Gradiente Aritmético Vencido',
-            'aritmetico_anticipado' => 'Gradiente Aritmético Anticipado',
-            'geometrico_vencido' => 'Gradiente Geométrico Vencido',
-            'geometrico_anticipado' => 'Gradiente Geométrico Anticipado'
+            'vp_aritmetico_vencido' => 'VP Gradiente Aritmético Vencido',
+            'vp_aritmetico_anticipado' => 'VP Gradiente Aritmético Anticipado',
+            'vf_aritmetico_vencido' => 'VF Gradiente Aritmético Vencido',
+            'vf_aritmetico_anticipado' => 'VF Gradiente Aritmético Anticipado',
+            'vp_geometrico_vencido' => 'VP Gradiente Geométrico Vencido',
+            'vp_geometrico_anticipado' => 'VP Gradiente Geométrico Anticipado',
+            'vf_geometrico_vencido' => 'VF Gradiente Geométrico Vencido',
+            'vf_geometrico_anticipado' => 'VF Gradiente Geométrico Anticipado',
         ];
     }
 
-    // Método que se ejecuta cuando cambia el tipo de gradiente
-    public function updatedTipoGradiente()
+    // Método que se ejecuta cuando cambia la fórmula seleccionada
+    public function updatedFormulaSeleccionada()
     {
-        // Limpiar todos los campos al cambiar de tipo
-        $this->reset([
-            'valorPresente_G',
-            'valorFuturo_G',
-            'tasaInteres_G',
-            'numeroPeriodos_G',
-            'pagoBase_A',
-            'gradienteAritmetico_A',
-            'pagoInicial_Geo',
-            'tasaCrecimiento_Geo',
-            'result',
-            'resultVP',
-            'resultVF'
-        ]);
+        // Limpiar resultados cuando cambie la fórmula
+        $this->reset(['result']);
     }
 
-    // Método principal de cálculo
+    // Override del método calcular
     public function calcular()
     {
-        // Limpiar resultados anteriores
-        $this->result = null;
-        $this->resultVP = null;
-        $this->resultVF = null;
-
-        $esAritmético = str_starts_with($this->tipoGradiente, 'aritmetico');
-        $esAnticipado = str_ends_with($this->tipoGradiente, 'anticipado');
-
-        if ($esAritmético) {
-            $this->calcularGradienteAritmetico($esAnticipado);
-        } else {
-            $this->calcularGradienteGeometrico($esAnticipado);
-        }
+        $this->calcularGradientes();
     }
 
-    // Obtener configuración de campos según el tipo de gradiente
+    // Determinar qué campos mostrar según la fórmula seleccionada
     public function getCamposFormula()
     {
-        $camposComunes = [
-            'tasaInteres_G' => [
-                'label' => 'Tasa de Interés (i) %',
-                'placeholder' => '5.5',
-                'required' => true,
-                'help' => 'Tasa de interés por período'
-            ],
-            'numeroPeriodos_G' => [
-                'label' => 'Número de Períodos (n)',
-                'placeholder' => '10',
-                'required' => true,
-                'help' => 'Cantidad total de períodos'
-            ]
+        $esValorPresente = $this->esFormulaValorPresente();
+        $esGeometrico = $this->esGradienteGeometrico();
+
+        $campos = [];
+
+        // Valor Presente o Valor Futuro
+        if ($esValorPresente) {
+            $campos['valorPresente_G'] = [
+                'label' => 'Valor Presente (P)',
+                'placeholder' => '10,000',
+                'description' => 'Valor presente de la serie de pagos'
+            ];
+        } else {
+            $campos['valorFuturo_G'] = [
+                'label' => 'Valor Futuro (F)',
+                'placeholder' => '15,000',
+                'description' => 'Valor futuro de la serie de pagos'
+            ];
+        }
+
+        // Pago Base
+        $campos['pagoBase_G'] = [
+            'label' => 'Pago Base (A)',
+            'placeholder' => '1,000',
+            'description' => 'Primer pago de la serie'
         ];
 
-        $esAritmético = str_starts_with($this->tipoGradiente, 'aritmetico');
-
-        if ($esAritmético) {
-            return array_merge($camposComunes, [
-                'valorPresente_G' => [
-                    'label' => 'Valor Presente (VP)',
-                    'placeholder' => '10,000',
-                    'help' => 'Valor actual de la serie de pagos. Dejar vacío para calcularlo.'
-                ],
-                'valorFuturo_G' => [
-                    'label' => 'Valor Futuro (VF)',
-                    'placeholder' => '15,000',
-                    'help' => 'Valor futuro de la serie de pagos. Dejar vacío para calcularlo.'
-                ],
-                'pagoBase_A' => [
-                    'label' => 'Pago Base (A)',
-                    'placeholder' => '1,000',
-                    'help' => 'Pago inicial o base de la serie'
-                ],
-                'gradienteAritmetico_A' => [
-                    'label' => 'Gradiente Aritmético (G)',
-                    'placeholder' => '100',
-                    'help' => 'Incremento constante por período (puede ser negativo)'
-                ]
-            ]);
-        } else { // geometrico
-            return array_merge($camposComunes, [
-                'valorPresente_G' => [
-                    'label' => 'Valor Presente (VP)',
-                    'placeholder' => '10,000',
-                    'help' => 'Valor actual de la serie de pagos. Dejar vacío para calcularlo.'
-                ],
-                'valorFuturo_G' => [
-                    'label' => 'Valor Futuro (VF)',
-                    'placeholder' => '15,000',
-                    'help' => 'Valor futuro de la serie de pagos. Dejar vacío para calcularlo.'
-                ],
-                'pagoInicial_Geo' => [
-                    'label' => 'Pago Inicial (P1)',
-                    'placeholder' => '1,000',
-                    'help' => 'Primer pago de la serie'
-                ],
-                'tasaCrecimiento_Geo' => [
-                    'label' => 'Tasa de Crecimiento (g) %',
-                    'placeholder' => '3.0',
-                    'help' => 'Tasa de crecimiento geométrico por período'
-                ]
-            ]);
-        }
-    }
-
-    // Obtener información sobre la fórmula actual
-    public function getFormulaInfo()
-    {
-        $esAritmético = str_starts_with($this->tipoGradiente, 'aritmetico');
-        $esAnticipado = str_ends_with($this->tipoGradiente, 'anticipado');
-
-        if ($esAritmético) {
-            if ($esAnticipado) {
-                return [
-                    'titulo' => 'Gradiente Aritmético Anticipado',
-                    'descripcion' => 'Serie de pagos anticipados que aumentan/disminuyen en una cantidad constante',
-                    'formula_vp' => 'P = [A[(1+i)ⁿ - 1]/[i(1+i)ⁿ] + (G/i)[(1+i)ⁿ - in - 1]/[i²(1+i)ⁿ]] x (1+i)',
-                    'formula_vf' => 'F = [A[(1+i)ⁿ - 1]/i + (G/i)[((1+i)ⁿ - 1)/i - n]] x (1+i)',
-                    'variables' => 'A = Pago base, G = Gradiente, i = Tasa, n = Períodos',
-                    'ejemplo' => 'Ej: Pagos al inicio de cada período: $1,000, $1,100, $1,200... (G = $100)'
-                ];
-            } else {
-                return [
-                    'titulo' => 'Gradiente Aritmético Vencido',
-                    'descripcion' => 'Serie de pagos vencidos que aumentan/disminuyen en una cantidad constante',
-                    'formula_vp' => 'P = A[(1+i)ⁿ - 1]/[i(1+i)ⁿ] + (G/i)[(1+i)ⁿ - in - 1]/[i²(1+i)ⁿ]',
-                    'formula_vf' => 'F = A[(1+i)ⁿ - 1]/i + (G/i)[((1+i)ⁿ - 1)/i - n]',
-                    'variables' => 'A = Pago base, G = Gradiente, i = Tasa, n = Períodos',
-                    'ejemplo' => 'Ej: Pagos al final de cada período: $1,000, $1,100, $1,200... (G = $100)'
-                ];
-            }
+        // Gradiente
+        if ($esGeometrico) {
+            $campos['gradiente_G'] = [
+                'label' => 'Gradiente Geométrico (G) %',
+                'placeholder' => '5.0',
+                'description' => 'Tasa de crecimiento constante de los pagos'
+            ];
         } else {
-            if ($esAnticipado) {
-                return [
-                    'titulo' => 'Gradiente Geométrico Anticipado',
-                    'descripcion' => 'Serie de pagos anticipados que aumentan/disminuyen en un porcentaje constante',
-                    'formula_vp' => 'P = [A(1+G)ⁿ(1+i)⁻ⁿ - 1]/(G-i) x (1+i), cuando G ≠ i',
-                    'formula_vp_especial' => 'Si G = i: P = nA x (1+i)',
-                    'formula_vf' => 'F = [A(1+G)ⁿ - (1+i)ⁿ]/(G-i) x (1+i), cuando G ≠ i',
-                    'formula_vf_especial' => 'Si G = i: F = nA(1+i)ⁿ',
-                    'variables' => 'A = Pago inicial, G = Tasa de crecimiento, i = Tasa, n = Períodos',
-                    'ejemplo' => 'Ej: Pagos al inicio: $1,000, $1,050, $1,102.50... (G = 5%)'
-                ];
-            } else {
-                return [
-                    'titulo' => 'Gradiente Geométrico Vencido',
-                    'descripcion' => 'Serie de pagos vencidos que aumentan/disminuyen en un porcentaje constante',
-                    'formula_vp' => 'P = A(1+G)ⁿ(1+i)⁻ⁿ - 1]/(G-i), cuando G ≠ i',
-                    'formula_vp_especial' => 'Si G = i: P = nA/(1+i)',
-                    'formula_vf' => 'F = A[(1+G)ⁿ - (1+i)ⁿ]/(G-i), cuando G ≠ i',
-                    'formula_vf_especial' => 'Si G = i: F = nA(1+i)ⁿ',
-                    'variables' => 'A = Pago inicial, G = Tasa de crecimiento, i = Tasa, n = Períodos',
-                    'ejemplo' => 'Ej: Pagos al final: $1,000, $1,050, $1,102.50... (G = 5%)'
-                ];
-            }
+            $campos['gradiente_G'] = [
+                'label' => 'Gradiente Aritmético (G)',
+                'placeholder' => '100',
+                'description' => 'Incremento constante en cada período'
+            ];
         }
+
+        // Tasa de Interés
+        $campos['tasaInteres_G'] = [
+            'label' => 'Tasa de Interés (i) %',
+            'placeholder' => '8.0',
+            'description' => 'Tasa de interés por período'
+        ];
+
+        // Número de Períodos
+        $campos['numeroPeriodos_G'] = [
+            'label' => 'Número de Períodos (n)',
+            'placeholder' => '12',
+            'description' => 'Cantidad de pagos en la serie'
+        ];
+
+        return $campos;
     }
 
-    // Obtener el nombre del campo calculado
+    // Obtener descripción de la fórmula actual
+    public function getDescripcionFormula()
+    {
+        $descripciones = [
+            'vp_aritmetico_vencido' => [
+                'formula' => 'P = [A[1-(1+i)⁻ⁿ]/i] + (G/i)[[1-(1+i)⁻ⁿ]/i - n/(1+i)ⁿ]',
+                'tipo' => 'Aritmético Vencido',
+                'explicacion' => 'Pagos que aumentan una cantidad constante (G) al final de cada período.'
+            ],
+            'vp_aritmetico_anticipado' => [
+                'formula' => 'P = {[A[1-(1+i)⁻ⁿ]/i] + (G/i)[[1-(1+i)⁻ⁿ]/i - n/(1+i)ⁿ]} × (1+i)',
+                'tipo' => 'Aritmético Anticipado',
+                'explicacion' => 'Pagos que aumentan una cantidad constante (G) al inicio de cada período.'
+            ],
+            'vf_aritmetico_vencido' => [
+                'formula' => 'F = [A[(1+i)ⁿ-1]/i] + (G/i)[[(1+i)ⁿ-1]/i - n]',
+                'tipo' => 'Aritmético Vencido',
+                'explicacion' => 'Valor futuro de pagos que aumentan una cantidad constante al final de cada período.'
+            ],
+            'vf_aritmetico_anticipado' => [
+                'formula' => 'F = {[A[(1+i)ⁿ-1]/i] + (G/i)[[(1+i)ⁿ-1]/i - n]} × (1+i)',
+                'tipo' => 'Aritmético Anticipado',
+                'explicacion' => 'Valor futuro de pagos que aumentan una cantidad constante al inicio de cada período.'
+            ],
+            'vp_geometrico_vencido' => [
+                'formula' => 'P = A[(1+G)ⁿ(1+i)⁻ⁿ - 1]/(G-i) [si G≠i] | P = nA/(1+i) [si G=i]',
+                'tipo' => 'Geométrico Vencido',
+                'explicacion' => 'Pagos que crecen a una tasa porcentual constante (G) al final de cada período.'
+            ],
+            'vp_geometrico_anticipado' => [
+                'formula' => 'P = A[(1+G)ⁿ(1+i)⁻ⁿ - 1](1+i)/(G-i) [si G≠i] | P = nA [si G=i]',
+                'tipo' => 'Geométrico Anticipado',
+                'explicacion' => 'Pagos que crecen a una tasa porcentual constante (G) al inicio de cada período.'
+            ],
+            'vf_geometrico_vencido' => [
+                'formula' => 'F = A[(1+G)ⁿ - (1+i)ⁿ]/(G-i) [si G≠i] | F = nA(1+i)ⁿ⁻¹ [si G=i]',
+                'tipo' => 'Geométrico Vencido',
+                'explicacion' => 'Valor futuro de pagos que crecen porcentualmente al final de cada período.'
+            ],
+            'vf_geometrico_anticipado' => [
+                'formula' => 'F = A[(1+G)ⁿ - (1+i)ⁿ](1+i)/(G-i) [si G≠i] | F = nA(1+i)ⁿ [si G=i]',
+                'tipo' => 'Geométrico Anticipado',
+                'explicacion' => 'Valor futuro de pagos que crecen porcentualmente al inicio de cada período.'
+            ],
+        ];
+
+        return $descripciones[$this->formulaSeleccionada] ?? [
+            'formula' => '',
+            'tipo' => '',
+            'explicacion' => ''
+        ];
+    }
+
+    // Obtener información de variables para el tooltip
+    public function getVariablesInfo()
+    {
+        $esGeometrico = $this->esGradienteGeometrico();
+        $esValorPresente = $this->esFormulaValorPresente();
+
+        $info = [];
+
+        if ($esValorPresente) {
+            $info['P'] = 'Valor Presente: valor actual de todos los pagos futuros';
+        } else {
+            $info['F'] = 'Valor Futuro: valor acumulado al final de todos los períodos';
+        }
+
+        $info['A'] = 'Pago Base: primer pago de la serie';
+
+        if ($esGeometrico) {
+            $info['G'] = 'Gradiente Geométrico: tasa de crecimiento porcentual entre pagos consecutivos';
+        } else {
+            $info['G'] = 'Gradiente Aritmético: cantidad fija que se suma en cada período';
+        }
+
+        $info['i'] = 'Tasa de Interés: costo del dinero por período (en porcentaje)';
+        $info['n'] = 'Número de Períodos: cantidad total de pagos en la serie';
+
+        return $info;
+    }
+
+    // Determinar qué campo se calculó
     public function getCampoCalculado()
     {
-        // Si se calcularon VP y VF simultáneamente
-        if (!is_null($this->resultVP) && !is_null($this->resultVF)) {
-            return 'VP y VF';
-        }
-
         $camposVacios = [];
-        $esAritmético = str_starts_with($this->tipoGradiente, 'aritmetico');
 
-        if ($esAritmético) {
-            if (is_null($this->valorPresente_G) || $this->valorPresente_G === '')
-                $camposVacios[] = 'Valor Presente';
-            if (is_null($this->valorFuturo_G) || $this->valorFuturo_G === '')
-                $camposVacios[] = 'Valor Futuro';
-            if (is_null($this->pagoBase_A) || $this->pagoBase_A === '')
-                $camposVacios[] = 'Pago Base';
-            if (is_null($this->gradienteAritmetico_A) || $this->gradienteAritmetico_A === '')
-                $camposVacios[] = 'Gradiente Aritmético';
+        if ($this->esFormulaValorPresente()) {
+            if (is_null($this->valorPresente_G) || $this->valorPresente_G === '') {
+                return 'Valor Presente (P)';
+            }
         } else {
-            if (is_null($this->valorPresente_G) || $this->valorPresente_G === '')
-                $camposVacios[] = 'Valor Presente';
-            if (is_null($this->valorFuturo_G) || $this->valorFuturo_G === '')
-                $camposVacios[] = 'Valor Futuro';
-            if (is_null($this->pagoInicial_Geo) || $this->pagoInicial_Geo === '')
-                $camposVacios[] = 'Pago Inicial';
-            if (is_null($this->tasaCrecimiento_Geo) || $this->tasaCrecimiento_Geo === '')
-                $camposVacios[] = 'Tasa de Crecimiento';
+            if (is_null($this->valorFuturo_G) || $this->valorFuturo_G === '') {
+                return 'Valor Futuro (F)';
+            }
         }
 
-        return count($camposVacios) === 1 ? $camposVacios[0] : 'Resultado';
-    }
-
-    // Determinar el formato del resultado
-    public function getFormatoResultado()
-    {
-        $campo = $this->getCampoCalculado();
-
-        if (str_contains($campo, 'Tasa') || str_contains($campo, 'Crecimiento')) {
-            return ['tipo' => 'porcentaje', 'decimales' => 4];
-        } else {
-            return ['tipo' => 'moneda', 'decimales' => 2];
+        if (is_null($this->pagoBase_G) || $this->pagoBase_G === '') {
+            return 'Pago Base (A)';
         }
+
+        if (is_null($this->gradiente_G) || $this->gradiente_G === '') {
+            if ($this->esGradienteGeometrico()) {
+                return 'Gradiente Geométrico (G)';
+            } else {
+                return 'Gradiente Aritmético (G)';
+            }
+        }
+
+        if (is_null($this->tasaInteres_G) || $this->tasaInteres_G === '') {
+            return 'Tasa de Interés (i)';
+        }
+
+        if (is_null($this->numeroPeriodos_G) || $this->numeroPeriodos_G === '') {
+            return 'Número de Períodos (n)';
+        }
+
+        return 'Resultado';
     }
 
-    // Obtener el tipo de gradiente formateado
-    public function getTipoGradienteFormato()
+    // Formatear el resultado según el tipo de campo calculado
+    public function getResultadoFormateado()
     {
-        $tipos = [
-            'aritmetico_vencido' => 'Aritmético Vencido',
-            'aritmetico_anticipado' => 'Aritmético Anticipado',
-            'geometrico_vencido' => 'Geométrico Vencido',
-            'geometrico_anticipado' => 'Geométrico Anticipado'
+        if ($this->result === null) {
+            return null;
+        }
+
+        $campoCalculado = $this->getCampoCalculado();
+
+        // Tasa de interés y gradiente geométrico en porcentaje
+        if (
+            str_contains($campoCalculado, 'Tasa de Interés') ||
+            (str_contains($campoCalculado, 'Gradiente') && $this->esGradienteGeometrico())
+        ) {
+            return number_format($this->result, 4) . '%';
+        }
+
+        // Número de períodos sin decimales (o con pocos)
+        if (str_contains($campoCalculado, 'Número de Períodos')) {
+            return number_format($this->result, 2) . ' períodos';
+        }
+
+        // Valores monetarios
+        return '$' . number_format($this->result, 2);
+    }
+
+    // Verificar si hay caso especial G = i
+    public function hayAdvertenciaGIgualI()
+    {
+        if (!$this->esGradienteGeometrico()) {
+            return false;
+        }
+
+        $g = $this->gradiente_G ? $this->gradiente_G / 100 : null;
+        $i = $this->tasaInteres_G ? $this->tasaInteres_G / 100 : null;
+
+        if ($g !== null && $i !== null) {
+            return abs($g - $i) < 0.0001;
+        }
+
+        return false;
+    }
+
+    // Obtener ejemplo de flujo de pagos
+    public function getEjemploFlujo()
+    {
+        if (!$this->pagoBase_G || !$this->gradiente_G || !$this->numeroPeriodos_G) {
+            return null;
+        }
+
+        $ejemplos = [];
+        $A = $this->pagoBase_G;
+
+        // Mostrar solo primeros 5 períodos como ejemplo
+        $periodosMostrar = min(5, $this->numeroPeriodos_G);
+
+        for ($periodo = 1; $periodo <= $periodosMostrar; $periodo++) {
+            if ($this->esGradienteAritmetico()) {
+                $pago = $A + ($this->gradiente_G * ($periodo - 1));
+            } else {
+                $g = $this->gradiente_G / 100;
+                $pago = $A * pow(1 + $g, $periodo - 1);
+            }
+
+            $ejemplos[] = [
+                'periodo' => $periodo,
+                'pago' => $pago
+            ];
+        }
+
+        return [
+            'pagos' => $ejemplos,
+            'hayMas' => $this->numeroPeriodos_G > 5,
+            'total' => $this->numeroPeriodos_G
         ];
-
-        return $tipos[$this->tipoGradiente] ?? 'Desconocido';
     }
 
     public function render()
     {
         return view('livewire.calculadora-gradientes', [
-            'tiposGradienteOptions' => $this->getTiposGradienteOptions(),
+            'formulasOptions' => $this->getFormulasOptions(),
             'camposFormula' => $this->getCamposFormula(),
-            'formulaInfo' => $this->getFormulaInfo()
+            'descripcionFormula' => $this->getDescripcionFormula(),
+            'variablesInfo' => $this->getVariablesInfo(),
+            'campoCalculado' => $this->getCampoCalculado(),
+            'resultadoFormateado' => $this->getResultadoFormateado(),
+            'advertenciaGIgualI' => $this->hayAdvertenciaGIgualI(),
+            'ejemploFlujo' => $this->getEjemploFlujo()
         ]);
     }
 }

@@ -13,27 +13,7 @@
                 @endforeach
             </select>
 
-            <div class="mt-4 p-4 bg-green-100 dark:bg-green-800 rounded-md">
-                <p class="text-sm text-green-800 dark:text-green-200 font-semibold mb-2">
-                    {{ $descripcionSistema['nombre'] }}
-                </p>
-                <p class="text-sm text-green-700 dark:text-green-300 mb-3">
-                    {{ $descripcionSistema['descripcion'] }}
-                </p>
-                <ul class="text-xs text-green-700 dark:text-green-300 space-y-1">
-                    @foreach ($descripcionSistema['caracteristicas'] as $caract)
-                        <li class="flex items-center">
-                            <span class="text-green-600 dark:text-green-400 mr-2">✓</span>
-                            {{ $caract }}
-                        </li>
-                    @endforeach
-                </ul>
-                <div class="mt-3 pt-3 border-t border-green-300 dark:border-green-700">
-                    <p class="text-xs text-green-600 dark:text-green-400">
-                        <strong>Fórmula:</strong> {{ $descripcionSistema['formula'] }}
-                    </p>
-                </div>
-            </div>
+
 
             <div class="mt-3 p-3 bg-green-100 dark:bg-green-800 rounded-md border-l-4 border-green-500">
                 <p class="text-sm text-green-800 dark:text-green-200">
@@ -55,12 +35,7 @@
                                 <span class="text-red-500 ml-1">*</span>
                             @endif
                         </span>
-                        @if (isset($config['help']))
-                            <span class="text-xs text-gray-500 dark:text-gray-400 italic ml-2"
-                                title="{{ $config['help'] }}">
-                                ℹ️
-                            </span>
-                        @endif
+
                     </label>
 
                     @if ($campo === 'numeroPeriodos_A')
@@ -115,79 +90,6 @@
             </span>
         </button>
     </form>
-
-    <!-- Resumen de cuotas -->
-    @if ($resumenCuotas && !empty($tabla))
-        <div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-            @if ($sistemaSeleccionado === 'frances')
-                <div
-                    class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-900/20 rounded-lg p-5 border border-green-300 dark:border-green-700">
-                    <p class="text-xs text-green-600 dark:text-green-400 font-semibold uppercase mb-2">Cuota Constante
-                    </p>
-                    <p class="text-2xl font-bold text-green-700 dark:text-green-300">
-                        ${{ number_format($resumenCuotas['cuota_constante'], 2) }}
-                    </p>
-                    <p class="text-xs text-green-600 dark:text-green-400 mt-2">
-                        {{ $resumenCuotas['descripcion'] }}
-                    </p>
-                </div>
-            @elseif($sistemaSeleccionado === 'aleman')
-                <div
-                    class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-900/20 rounded-lg p-5 border border-green-300 dark:border-green-700">
-                    <p class="text-xs text-green-600 dark:text-green-400 font-semibold uppercase mb-2">Amortización Fija
-                    </p>
-                    <p class="text-2xl font-bold text-green-700 dark:text-green-300">
-                        ${{ number_format($resumenCuotas['amortizacion_fija'], 2) }}
-                    </p>
-                    <p class="text-xs text-green-600 dark:text-green-400 mt-2">
-                        Por período
-                    </p>
-                </div>
-                <div
-                    class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-900/20 rounded-lg p-5 border border-blue-300 dark:border-blue-700">
-                    <p class="text-xs text-blue-600 dark:text-blue-400 font-semibold uppercase mb-2">Cuota Inicial</p>
-                    <p class="text-2xl font-bold text-blue-700 dark:text-blue-300">
-                        ${{ number_format($resumenCuotas['cuota_inicial'], 2) }}
-                    </p>
-                    <p class="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                        Período 1
-                    </p>
-                </div>
-                <div
-                    class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-900/20 rounded-lg p-5 border border-purple-300 dark:border-purple-700">
-                    <p class="text-xs text-purple-600 dark:text-purple-400 font-semibold uppercase mb-2">Cuota Final</p>
-                    <p class="text-2xl font-bold text-purple-700 dark:text-purple-300">
-                        ${{ number_format($resumenCuotas['cuota_final'], 2) }}
-                    </p>
-                    <p class="text-xs text-purple-600 dark:text-purple-400 mt-2">
-                        Período {{ $numeroPeriodos_A }}
-                    </p>
-                </div>
-            @elseif($sistemaSeleccionado === 'americano')
-                <div
-                    class="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-900/20 rounded-lg p-5 border border-green-300 dark:border-green-700">
-                    <p class="text-xs text-green-600 dark:text-green-400 font-semibold uppercase mb-2">Cuota Periódica
-                        (Interés)</p>
-                    <p class="text-2xl font-bold text-green-700 dark:text-green-300">
-                        ${{ number_format($resumenCuotas['cuota_periodica'], 2) }}
-                    </p>
-                    <p class="text-xs text-green-600 dark:text-green-400 mt-2">
-                        Períodos 1 a {{ $numeroPeriodos_A - 1 }}
-                    </p>
-                </div>
-                <div
-                    class="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-900/20 rounded-lg p-5 border border-red-300 dark:border-red-700">
-                    <p class="text-xs text-red-600 dark:text-red-400 font-semibold uppercase mb-2">Cuota Final</p>
-                    <p class="text-2xl font-bold text-red-700 dark:text-red-300">
-                        ${{ number_format($resumenCuotas['cuota_final'], 2) }}
-                    </p>
-                    <p class="text-xs text-red-600 dark:text-red-400 mt-2">
-                        Período {{ $numeroPeriodos_A }} (Capital + Interés)
-                    </p>
-                </div>
-            @endif
-        </div>
-    @endif
 
     <!-- Tabla de amortización -->
     @if (!empty($tabla))
@@ -282,44 +184,7 @@
                 </table>
             </div>
 
-            <!-- Estadísticas de la amortización -->
-            @if ($estadisticas)
-                <div class="px-6 py-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-                    <p class="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase mb-3">Estadísticas</p>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
-                        <div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400">Capital Total</p>
-                            <p class="text-sm font-bold text-gray-900 dark:text-gray-100">
-                                ${{ number_format($estadisticas['capital_total'], 2) }}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400">Total Intereses</p>
-                            <p class="text-sm font-bold text-purple-600 dark:text-purple-400">
-                                ${{ number_format($estadisticas['interes_total'], 2) }}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400">Total Pagado</p>
-                            <p class="text-sm font-bold text-green-600 dark:text-green-400">
-                                ${{ number_format($estadisticas['cuota_total'], 2) }}
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400">% Interés</p>
-                            <p class="text-sm font-bold text-red-600 dark:text-red-400">
-                                {{ number_format($estadisticas['porcentaje_interes'], 2) }}%
-                            </p>
-                        </div>
-                        <div>
-                            <p class="text-xs text-gray-600 dark:text-gray-400">Tasa Efectiva</p>
-                            <p class="text-sm font-bold text-blue-600 dark:text-blue-400">
-                                {{ number_format($estadisticas['tasa_efectiva'], 2) }}%
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            @endif
+
         </div>
     @endif
 
@@ -329,8 +194,7 @@
             class="bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 dark:border-red-400 rounded-lg p-4 mt-6 shadow-md animate-shake">
             <div class="flex items-start">
                 <div class="flex-shrink-0">
-                    <svg class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5" fill="currentColor"
-                        viewBox="0 0 20 20">
+                    <svg class="w-5 h-5 text-red-500 dark:text-red-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd"
                             d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                             clip-rule="evenodd" />

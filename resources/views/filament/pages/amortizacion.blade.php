@@ -13,34 +13,7 @@
                         Calcula tablas de amortización para los tres sistemas principales: Francés, Alemán y Americano
                     </p>
 
-                    <!-- Info badges -->
-                    <div class="flex flex-wrap justify-center gap-2 mt-4">
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M8.433 7.418c.155-.103.346-.196.567-.267.21-.07.431-.123.658-.142a6.588 6.588 0 01.199-.007A6.54 6.54 0 0114.97 7.07a6.588 6.588 0 01.199.007 6.477 6.477 0 01.656.143 5.21 5.21 0 01.567.267c.154.103.346.196.567.267.21.07.431.123.658.142a6.588 6.588 0 01.199.007A6.54 6.54 0 0114.97 7.07M4.5 10a6.5 6.5 0 1113 0 6.5 6.5 0 01-13 0zm0 0v4a1 1 0 101 1H4.5a1 1 0 100-1v-4z" />
-                            </svg>
-                            Sistema Francés
-                        </span>
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path
-                                    d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                            </svg>
-                            Sistema Alemán
-                        </span>
-                        <span
-                            class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">
-                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd"
-                                    d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                                    clip-rule="evenodd" />
-                            </svg>
-                            Sistema Americano
-                        </span>
-                    </div>
+
                 </div>
 
                 <!-- Conceptos explicativos -->
