@@ -7,8 +7,9 @@
                 <div class="mb-8 text-center">
                     <h2 class="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Calculadora de Interés Simple
                     </h2>
-                    <p class="text-gray-600 dark:text-gray-400 text-lg">Calcula el interés simple y cualquier variable de
-                        sus fórmulas</p>
+                    <p class="text-xl text-gray-600 dark:text-gray-300 text-justify">
+                        ganancia obtenida al invertir o guardar dinero en una entidad financiera.
+                    </p>
                 </div>
 
                 <section id="calculadora">

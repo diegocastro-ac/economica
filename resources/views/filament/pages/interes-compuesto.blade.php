@@ -1,8 +1,8 @@
 <x-filament-panels::page>
-    <div class="flex h-screen bg-white dark:bg-gray-900 transition-colors duration-300 rounded-2xl">
+    <div class="flex h-screen bg-white dark:bg-gray-900 transition-colors duration-300 rounded-2xl ">
         <!-- Calculator Area -->
         <div class="flex-1 p-8 overflow-y-auto">
-            <div class="max-w-2xl mx-auto">
+            <div class="max-w-2xl mx-auto ">
                 <!-- Dark Mode Toggle -->
                 
 
