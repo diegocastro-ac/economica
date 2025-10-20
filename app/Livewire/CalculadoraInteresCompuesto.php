@@ -9,12 +9,15 @@ class CalculadoraInteresCompuesto extends Component
 {
     use formulas;
 
+    public $tiempoAnios_C;
+    public $tiempoMeses_C;
+    public $tiempoDias_C;
     public $capitalInicial_C;
     public $montoFinal_C;
     public $tasaInteres_C;
     public $tipoTasa_C = 1;
     public $tiempo_C;
-    public $capitalizacion_C = 1; // Por defecto semestral
+    public $capitalizacion_C = 1; 
 
     public function render()
     {

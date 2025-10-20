@@ -13,7 +13,7 @@ class InteresSimple extends Page
 
     protected static ?string $slug = 'primer-corte/interes-simple';
 
-    protected static ?int $navigationSort = 0;
+    protected static ?int $navigationSort = 1;
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-arrow-trending-up';
 

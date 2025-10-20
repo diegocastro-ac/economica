@@ -1,22 +1,24 @@
 <?php
 
 namespace App\Filament\Pages;
-
 use Illuminate\Contracts\Support\Htmlable;
 
 use Filament\Pages\Page;
 
-class InteresCompuesto extends Page
+class SistemasDeCapitalización extends Page
 {
-    protected string $view = 'filament.pages.interes-compuesto';
+    protected string $view = 'filament.pages.sistemas-de-capitalización';
 
-    protected static ?string $slug = 'primer-corte/interes-compuesto';
+    protected static ?string $slug = 'segundo-corte/sistemas-de-capitalización';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 0;
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-arrow-trending-up';
 
     protected static string|null|\BackedEnum $activeNavigationIcon = 'heroicon-c-arrow-down-left';
+
+    // Esta es la propiedad que necesitas para el wire:model
+    public string $tipoCapitalizacion = '';
 
     public function getHeading(): string|Htmlable
     {
@@ -25,7 +27,7 @@ class InteresCompuesto extends Page
 
     public static function getNavigationGroup(): ?string
     {
-        return 'Primer Corte';
+        return 'Segundo Corte';
     }
 
     protected array $extraBodyAttributes = [

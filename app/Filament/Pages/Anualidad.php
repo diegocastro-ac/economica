@@ -11,7 +11,7 @@ class Anualidad extends Page
 
     protected static ?string $slug = 'primer-corte/anualidad';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-arrow-trending-up';
 
